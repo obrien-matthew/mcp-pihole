@@ -48,10 +48,7 @@ def format_queries(data: dict[str, Any], max_entries: int = 100) -> dict[str, An
 
 def format_top_domains(data: dict[str, Any]) -> list[dict[str, Any]]:
     domains = data.get("top_domains", data.get("top_ads", []))
-    return [
-        {"domain": d.get("domain"), "count": d.get("count")}
-        for d in domains
-    ]
+    return [{"domain": d.get("domain"), "count": d.get("count")} for d in domains]
 
 
 def format_top_clients(data: dict[str, Any]) -> list[dict[str, Any]]:

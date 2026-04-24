@@ -76,9 +76,7 @@ class TestSessionRetry:
 
     def test_retries_on_session_invalid_body(self, client: PiholeClient):
         client._http.post.return_value = _auth_response()
-        invalid_session = _json_response(
-            {"session": {"valid": False}}, status=200
-        )
+        invalid_session = _json_response({"session": {"valid": False}}, status=200)
         success = _json_response({"data": "ok"})
         client._http.request.side_effect = [invalid_session, success]
 
@@ -135,9 +133,12 @@ class TestMissingCredentials:
             PiholeClient()
 
     def test_empty_password_allowed(self):
-        with patch.dict(
-            "os.environ",
-            {"PIHOLE_URL": "http://localhost:8080", "PIHOLE_PASSWORD": ""},
-        ), patch.object(httpx.Client, "__init__", return_value=None):
+        with (
+            patch.dict(
+                "os.environ",
+                {"PIHOLE_URL": "http://localhost:8080", "PIHOLE_PASSWORD": ""},
+            ),
+            patch.object(httpx.Client, "__init__", return_value=None),
+        ):
             c = PiholeClient()
             assert c._password == ""

@@ -126,17 +126,13 @@ def get_lists() -> str:
     try:
         result = _get_client().get_lists()
         lists = result.get("lists", [])
-        return json.dumps(
-            [format_list_entry(entry) for entry in lists], indent=2
-        )
+        return json.dumps([format_list_entry(entry) for entry in lists], indent=2)
     except (PiholeError, ValueError) as e:
         return f"Error: {e}"
 
 
 @mcp.tool()
-def add_list(
-    address: str, comment: str = "", enabled: bool = True
-) -> str:
+def add_list(address: str, comment: str = "", enabled: bool = True) -> str:
     """Add a blocklist by URL.
 
     address: URL of the blocklist (e.g., https://example.com/hosts.txt).
@@ -221,9 +217,7 @@ def get_domains(type: str = "deny", kind: str = "exact") -> str:
         kind = validate_domain_kind(kind)
         result = _get_client().get_domains(type, kind)
         domains = result.get("domains", [])
-        return json.dumps(
-            [format_domain_entry(d) for d in domains], indent=2
-        )
+        return json.dumps([format_domain_entry(d) for d in domains], indent=2)
     except (PiholeError, ValueError) as e:
         return f"Error: {e}"
 
@@ -246,9 +240,7 @@ def add_domain(
         type = validate_domain_type(type)
         kind = validate_domain_kind(kind)
         result = _get_client().add_domain(domain, type, kind, comment)
-        return json.dumps(
-            format_domain_entry(result.get("domain", result)), indent=2
-        )
+        return json.dumps(format_domain_entry(result.get("domain", result)), indent=2)
     except (PiholeError, ValueError) as e:
         return f"Error: {e}"
 

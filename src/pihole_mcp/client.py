@@ -29,9 +29,7 @@ class PiholeClient:
         self._sid: str | None = None
 
     def _authenticate(self) -> None:
-        resp = self._http.post(
-            "/api/auth", json={"password": self._password}
-        )
+        resp = self._http.post("/api/auth", json={"password": self._password})
         resp.raise_for_status()
         data = resp.json()
         session = data.get("session", {})
@@ -103,19 +101,13 @@ class PiholeClient:
         print(msg, file=sys.stderr)
         raise PiholeError(msg, status_code=resp.status_code)
 
-    def _get(
-        self, path: str, params: dict[str, Any] | None = None
-    ) -> dict[str, Any]:
+    def _get(self, path: str, params: dict[str, Any] | None = None) -> dict[str, Any]:
         return self._request("GET", path, params=params).json()
 
-    def _post(
-        self, path: str, json: Any | None = None
-    ) -> dict[str, Any]:
+    def _post(self, path: str, json: Any | None = None) -> dict[str, Any]:
         return self._request("POST", path, json=json).json()
 
-    def _put(
-        self, path: str, json: Any | None = None
-    ) -> dict[str, Any]:
+    def _put(self, path: str, json: Any | None = None) -> dict[str, Any]:
         return self._request("PUT", path, json=json).json()
 
     def _delete(self, path: str) -> httpx.Response:
@@ -131,17 +123,13 @@ class PiholeClient:
     def get_summary(self) -> dict[str, Any]:
         return self._get("/api/stats/summary")
 
-    def get_top_domains(
-        self, count: int = 10, blocked: bool = False
-    ) -> dict[str, Any]:
+    def get_top_domains(self, count: int = 10, blocked: bool = False) -> dict[str, Any]:
         params: dict[str, Any] = {"count": count}
         if blocked:
             params["blocked"] = "true"
         return self._get("/api/stats/top_domains", params=params)
 
-    def get_top_clients(
-        self, count: int = 10, blocked: bool = False
-    ) -> dict[str, Any]:
+    def get_top_clients(self, count: int = 10, blocked: bool = False) -> dict[str, Any]:
         params: dict[str, Any] = {"count": count}
         if blocked:
             params["blocked"] = "true"
@@ -231,9 +219,7 @@ class PiholeClient:
     def get_blocking(self) -> dict[str, Any]:
         return self._get("/api/dns/blocking")
 
-    def set_blocking(
-        self, enabled: bool, timer: int | None = None
-    ) -> dict[str, Any]:
+    def set_blocking(self, enabled: bool, timer: int | None = None) -> dict[str, Any]:
         payload: dict[str, Any] = {"blocking": enabled}
         if timer is not None:
             payload["timer"] = timer

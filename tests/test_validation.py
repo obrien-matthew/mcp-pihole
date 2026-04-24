@@ -54,7 +54,10 @@ class TestValidateDomainKind:
 
 class TestValidateUrl:
     def test_valid_https(self):
-        assert validate_url("https://example.com/hosts.txt") == "https://example.com/hosts.txt"
+        assert (
+            validate_url("https://example.com/hosts.txt")
+            == "https://example.com/hosts.txt"
+        )
 
     def test_valid_http(self):
         assert validate_url("http://example.com/list") == "http://example.com/list"
