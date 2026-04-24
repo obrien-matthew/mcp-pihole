@@ -126,5 +126,121 @@ class PiholeClient:
         """URL-encode a value for use in a path segment."""
         return quote(value, safe="")
 
-    def ping(self) -> dict[str, Any]:
+    # -- Diagnostics (Phase 2) --
+
+    def get_summary(self) -> dict[str, Any]:
         return self._get("/api/stats/summary")
+
+    def get_top_domains(
+        self, count: int = 10, blocked: bool = False
+    ) -> dict[str, Any]:
+        params: dict[str, Any] = {"count": count}
+        if blocked:
+            params["blocked"] = "true"
+        return self._get("/api/stats/top_domains", params=params)
+
+    def get_top_clients(
+        self, count: int = 10, blocked: bool = False
+    ) -> dict[str, Any]:
+        params: dict[str, Any] = {"count": count}
+        if blocked:
+            params["blocked"] = "true"
+        return self._get("/api/stats/top_clients", params=params)
+
+    def get_queries(
+        self, length: int = 100, cursor: int | None = None
+    ) -> dict[str, Any]:
+        params: dict[str, Any] = {"length": length}
+        if cursor is not None:
+            params["cursor"] = cursor
+        return self._get("/api/queries", params=params)
+
+    def get_version(self) -> dict[str, Any]:
+        return self._get("/api/info/version")
+
+    # -- Blocklist management (Phase 3) --
+
+    def get_lists(self) -> dict[str, Any]:
+        return self._get("/api/lists", params={"type": "block"})
+
+    def add_list(
+        self, address: str, comment: str = "", enabled: bool = True
+    ) -> dict[str, Any]:
+        return self._post(
+            "/api/lists?type=block",
+            json={
+                "address": address,
+                "comment": comment,
+                "enabled": enabled,
+            },
+        )
+
+    def remove_list(self, address: str) -> None:
+        encoded = self._encode_path(address)
+        self._delete(f"/api/lists/{encoded}?type=block")
+
+    def update_list(
+        self,
+        address: str,
+        enabled: bool | None = None,
+        comment: str | None = None,
+    ) -> dict[str, Any]:
+        encoded = self._encode_path(address)
+        payload: dict[str, Any] = {}
+        if enabled is not None:
+            payload["enabled"] = enabled
+        if comment is not None:
+            payload["comment"] = comment
+        return self._put(f"/api/lists/{encoded}?type=block", json=payload)
+
+    def update_gravity(self) -> dict[str, Any]:
+        return self._post("/api/action/gravity")
+
+    # -- Domain management (Phase 4) --
+
+    def get_domains(self, type: str, kind: str) -> dict[str, Any]:
+        return self._get(f"/api/domains/{type}/{kind}")
+
+    def add_domain(
+        self,
+        domain: str,
+        type: str = "deny",
+        kind: str = "exact",
+        comment: str = "",
+        enabled: bool = True,
+    ) -> dict[str, Any]:
+        return self._post(
+            f"/api/domains/{type}/{kind}",
+            json={
+                "domain": domain,
+                "comment": comment,
+                "enabled": enabled,
+            },
+        )
+
+    def remove_domain(self, domain: str, type: str, kind: str) -> None:
+        encoded = self._encode_path(domain)
+        self._delete(f"/api/domains/{type}/{kind}/{encoded}")
+
+    def search_domains(self, domain: str) -> dict[str, Any]:
+        encoded = self._encode_path(domain)
+        return self._get(f"/api/search/{encoded}")
+
+    # -- DNS control + DHCP (Phase 5) --
+
+    def get_blocking(self) -> dict[str, Any]:
+        return self._get("/api/dns/blocking")
+
+    def set_blocking(
+        self, enabled: bool, timer: int | None = None
+    ) -> dict[str, Any]:
+        payload: dict[str, Any] = {"blocking": enabled}
+        if timer is not None:
+            payload["timer"] = timer
+        return self._post("/api/dns/blocking", json=payload)
+
+    def get_dhcp_leases(self) -> dict[str, Any]:
+        return self._get("/api/dhcp/leases")
+
+    def restart_dns(self) -> dict[str, Any]:
+        return self._post("/api/action/restartdns")
