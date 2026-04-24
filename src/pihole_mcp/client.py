@@ -181,8 +181,9 @@ class PiholeClient:
             payload["comment"] = comment
         return self._put(f"/api/lists/{encoded}?type=block", json=payload)
 
-    def update_gravity(self) -> dict[str, Any]:
-        return self._post("/api/action/gravity")
+    def update_gravity(self) -> str:
+        resp = self._request("POST", "/api/action/gravity")
+        return resp.text
 
     # -- Domain management (Phase 4) --
 

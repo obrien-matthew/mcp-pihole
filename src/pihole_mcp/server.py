@@ -146,7 +146,9 @@ def add_list(address: str, comment: str = "", enabled: bool = True) -> str:
     try:
         address = validate_url(address)
         result = _get_client().add_list(address, comment, enabled)
-        return json.dumps(format_list_entry(result.get("list", result)), indent=2)
+        lists = result.get("lists", [])
+        entry = lists[0] if lists else result
+        return json.dumps(format_list_entry(entry), indent=2)
     except (PiholeError, ValueError) as e:
         return f"Error: {e}"
 
@@ -183,7 +185,9 @@ def update_list(
     try:
         address = validate_url(address)
         result = _get_client().update_list(address, enabled, comment)
-        return json.dumps(format_list_entry(result.get("list", result)), indent=2)
+        lists = result.get("lists", [])
+        entry = lists[0] if lists else result
+        return json.dumps(format_list_entry(entry), indent=2)
     except (PiholeError, ValueError) as e:
         return f"Error: {e}"
 
@@ -196,7 +200,9 @@ def update_gravity() -> str:
     to take effect. Runs asynchronously on the Pi-hole server.
     """
     try:
-        _get_client().update_gravity()
+        result = _get_client().update_gravity()
+        if result:
+            return "Gravity update completed."
         return "Gravity update started."
     except (PiholeError, ValueError) as e:
         return f"Error: {e}"
@@ -242,7 +248,9 @@ def add_domain(
         type = validate_domain_type(type)
         kind = validate_domain_kind(kind)
         result = _get_client().add_domain(domain, type, kind, comment)
-        return json.dumps(format_domain_entry(result.get("domain", result)), indent=2)
+        domains = result.get("domains", [])
+        entry = domains[0] if domains else result
+        return json.dumps(format_domain_entry(entry), indent=2)
     except (PiholeError, ValueError) as e:
         return f"Error: {e}"
 
