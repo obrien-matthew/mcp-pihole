@@ -94,35 +94,42 @@ class TestFormatQueries:
 class TestFormatTopDomains:
     def test_formats_domains(self):
         data = {
-            "top_domains": [
+            "domains": [
                 {"domain": "example.com", "count": 100},
                 {"domain": "test.org", "count": 50},
-            ]
+            ],
+            "total_queries": 500,
+            "blocked_queries": 200,
         }
         result = format_top_domains(data)
-        assert len(result) == 2
-        assert result[0]["domain"] == "example.com"
-        assert result[0]["count"] == 100
+        assert len(result["domains"]) == 2
+        assert result["domains"][0]["domain"] == "example.com"
+        assert result["domains"][0]["count"] == 100
+        assert result["total_queries"] == 500
 
-    def test_blocked_uses_top_ads_key(self):
-        data = {"top_ads": [{"domain": "ads.com", "count": 200}]}
-        result = format_top_domains(data)
-        assert result[0]["domain"] == "ads.com"
+    def test_empty(self):
+        result = format_top_domains({})
+        assert result["domains"] == []
+        assert result["total_queries"] == 0
 
 
 class TestFormatTopClients:
     def test_formats_clients(self):
         data = {
-            "top_clients": [
+            "clients": [
                 {"ip": "192.168.0.10", "name": "laptop", "count": 500},
-            ]
+            ],
+            "total_queries": 1000,
+            "blocked_queries": 100,
         }
         result = format_top_clients(data)
-        assert result[0]["ip"] == "192.168.0.10"
-        assert result[0]["name"] == "laptop"
+        assert result["clients"][0]["ip"] == "192.168.0.10"
+        assert result["clients"][0]["name"] == "laptop"
+        assert result["total_queries"] == 1000
 
     def test_empty(self):
-        assert format_top_clients({}) == []
+        result = format_top_clients({})
+        assert result["clients"] == []
 
 
 class TestFormatVersion:
@@ -187,20 +194,29 @@ class TestFormatSearchResults:
     def test_formats_search(self):
         data = {
             "search": {
-                "domain": "ads.example.com",
+                "domains": [],
                 "gravity": [{"address": "https://list.txt", "id": 1}],
-                "antigravity": [],
-                "deny": {"exact": [], "regex": []},
-                "allow": {"exact": [], "regex": []},
+                "results": {
+                    "domains": {"exact": 0, "regex": 0},
+                    "gravity": {"allow": 0, "block": 1},
+                    "total": 1,
+                },
+                "parameters": {
+                    "domain": "ads.example.com",
+                    "N": 20,
+                    "partial": False,
+                },
             }
         }
         result = format_search_results(data)
         assert result["domain"] == "ads.example.com"
         assert len(result["gravity"]) == 1
+        assert result["matches"]["total"] == 1
 
     def test_empty_search(self):
         result = format_search_results({})
         assert result["gravity"] == []
+        assert result["matches"]["total"] == 0
 
 
 class TestFormatBlockingStatus:

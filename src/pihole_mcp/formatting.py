@@ -51,21 +51,31 @@ def format_queries(data: dict[str, Any], max_entries: int = 100) -> dict[str, An
     }
 
 
-def format_top_domains(data: dict[str, Any]) -> list[dict[str, Any]]:
-    domains = data.get("top_domains", data.get("top_ads", []))
-    return [{"domain": d.get("domain"), "count": d.get("count")} for d in domains]
+def format_top_domains(data: dict[str, Any]) -> dict[str, Any]:
+    domains = data.get("domains", [])
+    return {
+        "total_queries": data.get("total_queries", 0),
+        "blocked_queries": data.get("blocked_queries", 0),
+        "domains": [
+            {"domain": d.get("domain"), "count": d.get("count")} for d in domains
+        ],
+    }
 
 
-def format_top_clients(data: dict[str, Any]) -> list[dict[str, Any]]:
-    clients = data.get("top_clients", [])
-    return [
-        {
-            "ip": c.get("ip"),
-            "name": c.get("name"),
-            "count": c.get("count"),
-        }
-        for c in clients
-    ]
+def format_top_clients(data: dict[str, Any]) -> dict[str, Any]:
+    clients = data.get("clients", [])
+    return {
+        "total_queries": data.get("total_queries", 0),
+        "blocked_queries": data.get("blocked_queries", 0),
+        "clients": [
+            {
+                "ip": c.get("ip"),
+                "name": c.get("name"),
+                "count": c.get("count"),
+            }
+            for c in clients
+        ],
+    }
 
 
 def format_version(data: dict[str, Any]) -> dict[str, Any]:
@@ -108,15 +118,20 @@ def format_domain_entry(entry: dict[str, Any]) -> dict[str, Any]:
 
 
 def format_search_results(data: dict[str, Any]) -> dict[str, Any]:
-    results = data.get("search", {})
+    search = data.get("search", {})
+    params = search.get("parameters", {})
+    results = search.get("results", {})
     return {
-        "domain": results.get("domain"),
-        "gravity": results.get("gravity", []),
-        "antigravity": results.get("antigravity", []),
-        "deny_exact": results.get("deny", {}).get("exact", []),
-        "deny_regex": results.get("deny", {}).get("regex", []),
-        "allow_exact": results.get("allow", {}).get("exact", []),
-        "allow_regex": results.get("allow", {}).get("regex", []),
+        "domain": params.get("domain"),
+        "domains": search.get("domains", []),
+        "gravity": search.get("gravity", []),
+        "matches": {
+            "domain_exact": results.get("domains", {}).get("exact", 0),
+            "domain_regex": results.get("domains", {}).get("regex", 0),
+            "gravity_block": results.get("gravity", {}).get("block", 0),
+            "gravity_allow": results.get("gravity", {}).get("allow", 0),
+            "total": results.get("total", 0),
+        },
     }
 
 
