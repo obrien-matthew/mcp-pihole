@@ -50,8 +50,10 @@ def get_status() -> str:
     unique domains, cached and forwarded query counts.
     """
     try:
-        result = _get_client().get_summary()
-        return json.dumps(format_summary(result), indent=2)
+        client = _get_client()
+        summary = client.get_summary()
+        blocking = client.get_blocking()
+        return json.dumps(format_summary(summary, blocking), indent=2)
     except (PiholeError, ValueError) as e:
         return f"Error: {e}"
 

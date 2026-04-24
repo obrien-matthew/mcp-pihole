@@ -3,18 +3,23 @@
 from typing import Any
 
 
-def format_summary(data: dict[str, Any]) -> dict[str, Any]:
-    return {
+def format_summary(
+    data: dict[str, Any], blocking: dict[str, Any] | None = None
+) -> dict[str, Any]:
+    result: dict[str, Any] = {
         "queries_today": data.get("queries", {}).get("total", 0),
         "blocked_today": data.get("queries", {}).get("blocked", 0),
         "percent_blocked": data.get("queries", {}).get("percent_blocked", 0),
         "domains_on_blocklist": data.get("gravity", {}).get("domains_being_blocked", 0),
-        "blocking_enabled": data.get("blocking") == "enabled",
         "clients_seen": data.get("clients", {}).get("total", 0),
         "unique_domains": data.get("queries", {}).get("unique_domains", 0),
         "cached": data.get("queries", {}).get("cached", 0),
         "forwarded": data.get("queries", {}).get("forwarded", 0),
     }
+    if blocking is not None:
+        result["blocking_enabled"] = blocking.get("blocking") == "enabled"
+        result["blocking_timer"] = blocking.get("timer")
+    return result
 
 
 def format_query(q: dict[str, Any]) -> dict[str, Any]:
@@ -64,11 +69,18 @@ def format_top_clients(data: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def format_version(data: dict[str, Any]) -> dict[str, Any]:
+    versions = data.get("version", {})
+    ftl = versions.get("ftl", {}).get("local", {})
+    core = versions.get("core", {}).get("local", {})
+    web = versions.get("web", {}).get("local", {})
+    docker = versions.get("docker", {})
     return {
-        "version": data.get("version"),
-        "branch": data.get("branch"),
-        "hash": data.get("hash"),
-        "date": data.get("date"),
+        "ftl": ftl.get("version"),
+        "core": core.get("version"),
+        "web": web.get("version"),
+        "docker": docker.get("local") if isinstance(docker, dict) else docker,
+        "branch": ftl.get("branch"),
+        "date": ftl.get("date"),
     }
 
 

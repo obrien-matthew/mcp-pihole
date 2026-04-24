@@ -27,22 +27,28 @@ class TestFormatSummary:
                 "forwarded": 9000,
             },
             "gravity": {"domains_being_blocked": 100000},
-            "blocking": "enabled",
             "clients": {"total": 15},
         }
-        result = format_summary(data)
+        blocking = {"blocking": "enabled", "timer": None}
+        result = format_summary(data, blocking)
         assert result["queries_today"] == 12345
         assert result["blocked_today"] == 678
         assert result["percent_blocked"] == 5.5
         assert result["domains_on_blocklist"] == 100000
         assert result["blocking_enabled"] is True
+        assert result["blocking_timer"] is None
         assert result["clients_seen"] == 15
         assert result["unique_domains"] == 2000
 
     def test_defaults_on_empty(self):
         result = format_summary({})
         assert result["queries_today"] == 0
-        assert result["blocking_enabled"] is False
+        assert "blocking_enabled" not in result
+
+    def test_without_blocking(self):
+        result = format_summary({"queries": {"total": 5}})
+        assert result["queries_today"] == 5
+        assert "blocking_enabled" not in result
 
 
 class TestFormatQuery:
@@ -122,14 +128,26 @@ class TestFormatTopClients:
 class TestFormatVersion:
     def test_formats_version(self):
         data = {
-            "version": "v6.6",
-            "branch": "master",
-            "hash": "abc123",
-            "date": "2026-04-01",
+            "version": {
+                "ftl": {
+                    "local": {
+                        "version": "v6.6",
+                        "branch": "master",
+                        "hash": "71b6fc62",
+                        "date": "2026-04-03",
+                    }
+                },
+                "core": {"local": {"version": "v6.4.1"}},
+                "web": {"local": {"version": "v6.5"}},
+                "docker": {"local": "2026.04.0", "remote": "2026.04.0"},
+            }
         }
         result = format_version(data)
-        assert result["version"] == "v6.6"
-        assert result["hash"] == "abc123"
+        assert result["ftl"] == "v6.6"
+        assert result["core"] == "v6.4.1"
+        assert result["web"] == "v6.5"
+        assert result["docker"] == "2026.04.0"
+        assert result["branch"] == "master"
 
 
 class TestFormatListEntry:
