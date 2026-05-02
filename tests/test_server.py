@@ -1,8 +1,11 @@
 """Tests for MCP server setup and tool registration."""
 
-from pihole_mcp.server import mcp
+from importlib.metadata import version
+
+from pihole_mcp.server import get_server_version, mcp
 
 EXPECTED_TOOLS = [
+    "get_server_version",
     "get_status",
     "get_top_domains",
     "get_top_clients",
@@ -30,6 +33,11 @@ class TestServerCreation:
 
     def test_server_name(self):
         assert mcp.name == "mcp-pihole"
+
+
+class TestGetServerVersion:
+    def test_returns_installed_version(self):
+        assert get_server_version() == version("mcp-pihole")
 
 
 class TestToolRegistration:

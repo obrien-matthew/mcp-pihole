@@ -1,6 +1,7 @@
 """MCP server with Pi-hole tools for DNS management."""
 
 import json
+from importlib.metadata import PackageNotFoundError, version
 
 from mcp.server.fastmcp import FastMCP
 
@@ -25,6 +26,16 @@ from .validation import (
 )
 
 mcp = FastMCP("mcp-pihole")
+
+
+@mcp.tool()
+def get_server_version() -> str:
+    """Return the installed version of the mcp-pihole server."""
+    try:
+        return version("mcp-pihole")
+    except PackageNotFoundError:
+        return "unknown"
+
 
 _client: PiholeClient | None = None
 
